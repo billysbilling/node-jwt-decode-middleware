@@ -1,0 +1,7 @@
+src/
+test/
+.editorconfig
+.eslintrc
+.eslintignore
+.drone.yml
+.drone.yml.sig
