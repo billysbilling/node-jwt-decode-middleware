@@ -1,8 +1,9 @@
 import { expect } from 'chai'
 import jwt from 'jsonwebtoken'
-import JWTDecodeMiddleware from '../src/jwt-decode-middleware'
+import jwtDecodeMiddleware from '../src/jwt-decode-middleware'
 
 describe('JWTDecodeMiddleware', () => {
+  let middleware = jwtDecodeMiddleware()
   let req
   let token
 
@@ -23,9 +24,8 @@ describe('JWTDecodeMiddleware', () => {
         authorization: `bearer ${token}`
       }
     }
-    const middleware = new JWTDecodeMiddleware()
     const next = () => {
-      expect(req._jwtDecoded).to.equal('Hello world')
+      expect(req.jwt).to.equal('Hello world')
       done()
     }
     middleware(req, {}, next)
@@ -37,9 +37,8 @@ describe('JWTDecodeMiddleware', () => {
         authorization: `bearer ${token}`
       }
     }
-    const middleware = new JWTDecodeMiddleware()
     const next = () => {
-      expect(req._jwtDecoded).to.equal('Hello world')
+      expect(req.jwt).to.equal('Hello world')
       done()
     }
     middleware(req, {}, next)
