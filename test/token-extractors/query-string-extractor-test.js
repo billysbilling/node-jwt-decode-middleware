@@ -1,17 +1,14 @@
 import { expect } from 'chai'
-import QueryStringExtractor from '../../src/token-extractors/query-string-extractor'
+import queryStringExtractor from '../../src/token-extractors/query-string-extractor'
 
 describe('QueryStringExtractor', () => {
-  const extractor = new QueryStringExtractor()
+  const accessTokenQueryExtractor = queryStringExtractor('access_token')
 
-  it('parses query string parameter', (done) => {
+  it('parses query string parameter', () => {
     const req = {
       url: '/?access_token=helloworld'
     }
-    const next = () => {
-      expect(req._jwt).to.equal('helloworld')
-      done()
-    }
-    extractor(req, {}, next)
+
+    expect(accessTokenQueryExtractor(req)).to.equal('helloworld')
   })
 })

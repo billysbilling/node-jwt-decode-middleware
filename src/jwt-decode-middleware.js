@@ -1,27 +1,21 @@
 import _ from 'lodash'
 import jwt from 'jsonwebtoken'
-import { compose } from 'compose-middleware'
-import AuthHeaderExtractor from './token-extractors/auth-header-extractor'
-import BodyExtractor from './token-extractors/body-extractor'
-import QueryStringExtractor from './token-extractors/query-string-extractor'
+import authHeaderExtractor from './token-extractors/auth-header-extractor'
+import bodyExtractor from './token-extractors/body-extractor'
+import queryStringExtractor from './token-extractors/query-string-extractor'
 
-function JWTDecode (options) {
-  return (req, res, next) => {
-    if (!req._jwt) return next()
-
-    req._jwtDecoded = jwt.decode(req._jwt, options)
-    next()
-  }
-}
-
-export default function JWTDecoderMiddleware (options) {
+module.exports = function jwtDecodeMiddleware (options) {
   const tokenProperty = _.get(options, 'tokenProperty') || 'access_token'
   options = _.omit(options, ['tokenProperty'])
+  const bearerExtractor = authHeaderExtractor('bearer')
+  const bodyTokenExtractor = bodyExtractor(tokenProperty)
+  const queryTokenExtractor = queryStringExtractor(tokenProperty)
 
-  return compose([
-    AuthHeaderExtractor(),
-    BodyExtractor(tokenProperty),
-    QueryStringExtractor(tokenProperty),
-    JWTDecode(options)
-  ])
+  return (req, res, next) => {
+    const token = bearerExtractor(req) || bodyTokenExtractor(req) || queryTokenExtractor(req)
+
+    req.jwt = token ? jwt.decode(token, options) : null
+
+    return next()
+  }
 }
