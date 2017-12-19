@@ -4,7 +4,7 @@ export default function AuthHeaderExtractor (authScheme) {
   authScheme = `${authScheme || 'bearer'}`.toLowerCase()
 
   return req => {
-    const authParams = parseHeader(req.headers.authorization)
+    const authParams = req.headers.authorization && parseHeader(req.headers.authorization)
 
     if (authParams && authScheme === `${authParams.scheme}`.toLowerCase()) {
       return authParams.token
