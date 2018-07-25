@@ -1,46 +1,61 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 import jwt from 'jsonwebtoken'
 import jwtDecodeMiddleware from '../src/jwt-decode-middleware'
 
+const JWT_SECRET = 'some secret'
+
 describe('JWTDecodeMiddleware', () => {
-  let middleware = jwtDecodeMiddleware()
-  let req
-  let token
+  let middleware = jwtDecodeMiddleware({
+    algorithm: 'HS256',
+    secret: JWT_SECRET
+  })
 
-  before((done) => {
-    const options = {
+  it('decodes valid JWT token', (done) => {
+    const token = jwt.sign({ data: 'Hello world' }, JWT_SECRET, {
       algorithm: 'HS256'
-    }
-    jwt.sign('Hello world', 'secret', options,
-      (err, result) => {
-        token = result
-        done(err)
-      })
+    })
+    let req = { headers: { authorization: `bearer ${token}` } }
+
+    middleware(
+      req,
+      {},
+      () => {
+        assert.deepOwnInclude(req.jwt, { data: 'Hello world' })
+        done()
+      }
+    )
   })
 
-  it('decodes JWT token', (done) => {
-    req = {
-      headers: {
-        authorization: `bearer ${token}`
+  it('does not decode wrongly signed JWT token', (done) => {
+    const token = jwt.sign({ data: 'Hello world' }, 'wrong secret', {
+      algorithm: 'HS256'
+    })
+    let req = { headers: { authorization: `bearer ${token}` } }
+
+    middleware(
+      req,
+      {},
+      () => {
+        assert.isUndefined(req.jwt)
+        done()
       }
-    }
-    const next = () => {
-      expect(req.jwt).to.equal('Hello world')
-      done()
-    }
-    middleware(req, {}, next)
+    )
   })
 
-  it('decodes JWT token without secret', (done) => {
-    req = {
-      headers: {
-        authorization: `bearer ${token}`
+  it('does not decode expired JWT token', (done) => {
+    const token = jwt.sign({ data: 'Hello world' }, JWT_SECRET, {
+      algorithm: 'HS256',
+      expiresIn: -1
+    })
+    let req = { headers: { authorization: `bearer ${token}` } }
+
+    middleware(
+      req,
+      {},
+      () => {
+        assert.isUndefined(req.jwt)
+        done()
       }
-    }
-    const next = () => {
-      expect(req.jwt).to.equal('Hello world')
-      done()
-    }
-    middleware(req, {}, next)
+    )
   })
 })
