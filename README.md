@@ -1,30 +1,31 @@
 # node-jwt-decode-middleware
 
-JWT decode express middleware.
+Express middleware for deserializing JWT data into `req.jwt` from:
+
+* Authorization header: `Authorization: Bearer <token_value>`,
+* Request query parameters: `req.query: { access_token: <token_value> }`
+* Request body: `req.body: { access_token: <token_value> }`
+
+*Note that invalid tokens are being ignored.*
 
 ## Usage
 
-### Express middleware
-
-Decodes JWT from :
-
-* `Authorization: Bearer JWT_TOKEN` Header,
-* body field (configured by`tokenProperty` option),
-* querystring parameter (configured by `tokenProperty` option)
-
-into `req._jwtDecoded` property
-
-
 ```javascript
 import express from 'express'
-import JWTDecodeMiddleware from '\@billyfree/jwt-decode-middleware'
+import jwtDecodeMiddleware from '\@billyfree/jwt-decode-middleware'
 
-const jwtDecodeMiddleware = new JWTDecodeMiddleware(secret, {
-	tokenProperty: 'access_token' // default
-})
-
+const jwtOptions = {
+	secret: 'jwt signature secret',
+	ignoreExpiration: false,
+	clockTolerance: 0
+	// aditional options: https://www.npmjs.com/package/jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+}
 const app = express()
-app.use(jwtDecodeMiddleware, (req, res, next) => {
-	console.log(req.jwt)
+
+app.use(jwtDecodeMiddleware(options))
+
+app.use((req, res, next) => {
+	console.log(req.raw_jwt) // token value
+	console.log(req.jwt) // token data
 })
 ```
