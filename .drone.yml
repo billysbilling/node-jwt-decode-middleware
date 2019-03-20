@@ -1,8 +1,19 @@
-pipeline:
-  build:
-    image: node:8-slim
-    commands:
-      - npm install --loglevel warn
-      - npm run lint
-      - npm run build
-      - npm run test
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: default
+  image: node:8-slim
+  commands:
+  - npm install --log-level error --registry https://npm.billy.dk
+  - npm run lint
+  - npm run build
+  - npm run test
+
+...
