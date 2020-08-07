@@ -1,13 +1,17 @@
-import url from 'url'
+import { URL } from 'url'
 
 export default function QueryStringExtractor (tokenProperty) {
   tokenProperty = tokenProperty || 'access_token'
 
   return req => {
-    const parsedUrl = url.parse(req.url || '', true)
-
-    if (parsedUrl.query && Object.prototype.hasOwnProperty.call(parsedUrl.query, tokenProperty)) {
-      return parsedUrl.query[tokenProperty]
+    if (req.query) {
+      return req.query[tokenProperty]
     }
+
+    // Fallback to parsing the url if query not parsed
+    // 'http://local' is used to construct a valid URL
+    const url = new URL(req.url, 'http://local')
+
+    return url.searchParams.get(tokenProperty)
   }
 }
