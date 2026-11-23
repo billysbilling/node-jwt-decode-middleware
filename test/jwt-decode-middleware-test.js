@@ -42,6 +42,36 @@ describe('JWTDecodeMiddleware', () => {
     )
   })
 
+  ;['HS384', 'HS512'].forEach((algorithm) => {
+    it(`decodes valid ${algorithm} JWT token`, (done) => {
+      const token = jwt.sign({ data: 'Hello world' }, JWT_SECRET, { algorithm })
+      const req = { headers: { authorization: `bearer ${token}` } }
+
+      middleware(
+        req,
+        {},
+        () => {
+          assert.deepOwnInclude(req.jwt, { data: 'Hello world' })
+          done()
+        }
+      )
+    })
+  })
+
+  it('does not decode unsigned (alg "none") JWT token', (done) => {
+    const token = jwt.sign({ data: 'Hello world' }, null, { algorithm: 'none' })
+    const req = { headers: { authorization: `bearer ${token}` } }
+
+    middleware(
+      req,
+      {},
+      () => {
+        assert.isUndefined(req.jwt)
+        done()
+      }
+    )
+  })
+
   it('does not decode expired JWT token', (done) => {
     const token = jwt.sign({ data: 'Hello world' }, JWT_SECRET, {
       algorithm: 'HS256',
