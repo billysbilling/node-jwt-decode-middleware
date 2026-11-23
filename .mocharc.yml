@@ -1,4 +1,4 @@
 require:
-  - 'babel-register'
+  - '@babel/register'
 recursive: true
 exit: true
